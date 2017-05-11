@@ -18,7 +18,11 @@
 
 using namespace std;
 
-const double M_PI = acos(-1.0);
+const double M_PI   = acos(-1.0);
+const double M_2PI  = 2 * M_PI;
+const double M_PI2  = M_PI * 0.5;
+const double M_3PI2 = M_PI * 0.75;
+const double M_RF = M_PI / 180.0;
 
 sf::RenderWindow window(sf::VideoMode(1000, 1000), "Lorem Ipsum");
 
@@ -41,9 +45,9 @@ public:
 	void ini(float cos1, float cos2)
 	{
 		cosa = cos(cos1 * M_PI / 180);
-		cosb = cos((cos2)* M_PI / 180);
+		cosb = cos(cos2 * M_PI / 180);
 		sina = sin(cos1 * M_PI / 180);
-		sinb = sin((cos2)* M_PI / 180);
+		sinb = sin(cos2 * M_PI / 180);
 	}
 
 	void plot(float x, float y, float z, int &x1, int &y1)
@@ -82,11 +86,14 @@ public:
 	}
 };
 
-void count_ref(float &s, float &t, float &u, float j, float i, float r)
+void count_ref(float &s, float &t, float &u, float ang_1, float ang_2, float r)
 {
-	s = (r)*cos(i*M_PI / 180.0)*sin(j*M_PI / 180.0);
-	t = (r)*sin(i*M_PI / 180.0)*sin(j*M_PI / 180.0);
-	u = (r)*cos(j*M_PI / 180.0);
+	ang_1 *= M_RF;
+	ang_2 *= M_RF;
+
+	s = r * cos(ang_2) * sin(ang_1);
+	t = r * sin(ang_2) * sin(ang_1);
+	u = r * cos(ang_1);
 }
 
 void main()
@@ -103,7 +110,7 @@ void main()
 
 	vector<int> x(20), y(20);
 
-	for (int i = 0; i<10; i++)
+	for (int i = 0; i < 10; i++)
 	{
 		p[i] = 0.0;
 		p1[i] = 0.0;
@@ -135,6 +142,15 @@ void main()
 		sf::Color(255, 50, 255)
 	};
 
+	vector<sf::Color> pl_colors =
+	{
+		sf::Color::Green,
+		sf::Color::Green,
+		sf::Color::Magenta,
+		sf::Color::White,
+		sf::Color::Yellow
+	};
+
 	bool ever = true;
 	for (;ever;)
 	{
@@ -147,35 +163,36 @@ void main()
 		for (int i = 1; i < 7; i++)
 			b[i].plot(r1[i], 0, 0, x[i], y[i]);
 
+		float i_max = 360.0 / 5.0;
 		for (float i = 0.0; i < 360.0; i += 5.0)
 		{
 			for (int i2 = 1; i2 < 5; i2++)
 				b[i2].plot3d(r1[i2] * cos(i * M_PI / 180.0), r1[i2] * sin(i * M_PI / 180.0), 0, colors[i2]);
 		}
 
-		int i_max = 24;
-		for (int i = 0.0; i < i_max; i += 1)
 		{
-			float ang = i * 360.0 / i_max;
-
-			for (float i2 = 0.0; i2 < 360.0; i2 += 13.0)
+			float i_max = 360.0 / 15.0;
+			float i2_max = 360.0 / 13.0;
+			for (int i = 0.0; i < i_max; i++)
 			{
-				count_ref(s, t, u, ang, i2, planet[0]);
-				a[0].plot3d(s, t, u, sf::Color::Cyan);
+				float ang = 360.0 * i / i_max;
 
-				count_ref(s, t, u, ang, i2, planet[1]);
-				a[1].plot3d1(s, t, u, x[1], y[1], sf::Color::Green);
+				for (int i2 = 0; i2 < i2_max; i2++)
+				{
+					float ang2 = 360.0 * i2 / i2_max;
 
-				count_ref(s, t, u, ang, i2, planet[2]);
-				a[2].plot3d1(s, t, u, x[2], y[2], sf::Color::Magenta);
+					count_ref(s, t, u, ang, ang2, planet[0]);
+					a[0].plot3d(s, t, u, sf::Color::Cyan);
 
-				count_ref(s, t, u, ang, i2, planet[3]);
-				a[3].plot3d1(s, t, u, x[3], y[3], sf::Color::White);
-
-				count_ref(s, t, u, ang, i2, planet[4]);
-				a[4].plot3d1(s, t, u, x[4], y[4], sf::Color::Yellow);
+					for (int i3 = 1; i3 < 5; i3++)
+					{
+						count_ref(s, t, u, ang, ang2, planet[i3]);
+						a[i3].plot3d1(s, t, u, x[i3], y[i3], pl_colors[i3]);
+					}
+				}
 			}
 		}
+
 		//delay(1);
 		//cleardevice();
 
