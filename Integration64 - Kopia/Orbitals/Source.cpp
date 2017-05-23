@@ -9,6 +9,8 @@
 #include <dos.h>
 #include <stdlib.h>
 #include <iso646.h>
+#include "dim_vecs.h"
+
 #define skip if (false)
 
 using namespace std;
@@ -21,6 +23,9 @@ const double M_RF = M_PI / 180.0;
 
 sf::RenderWindow window(sf::VideoMode(1000, 1000), "Lorem Ipsum");
 
+
+
+
 void putpixel(double x, double y, sf::Color cl)
 {
 	sf::Vertex point;
@@ -30,6 +35,8 @@ void putpixel(double x, double y, sf::Color cl)
 
 	window.draw(&point, 1, sf::Points);
 }
+
+
 
 struct elct
 {
