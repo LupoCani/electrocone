@@ -36,52 +36,54 @@ void putpixel(double x, double y, sf::Color cl)
 	window.draw(&point, 1, sf::Points);
 }
 
+float to_rad(float ang)
+{
+	return ang / 360.0 * M_2PI;
+}
 
 class Spr {
 private:
-	float cosa, cosb, sina, sinb;
+	float x_a, x_b, y_a, y_b;
 
 public:
-	void ini(float cos1, float cos2)
+	void ini(float ang_zx, float ang_yz)
 	{
-		cosa = cos(cos1 * M_PI / 180);
-		cosb = cos(cos2 * M_PI / 180);
-		sina = sin(cos1 * M_PI / 180);
-		sinb = sin(cos2 * M_PI / 180);
+		x_a = cos(ang_zx);
+		x_b = cos(ang_yz);
+		y_a = sin(ang_zx);
+		y_b = sin(ang_yz);
 	}
 
-	void plot(float x, float y, float z, int &x1, int &y1)
+	void plot_center(float x, float y, float z, int &x1, int &y1)
 	{
-		x1 = x * cosa - y * sina;
-		y1 = x * sina * sinb + y * cosa * sinb + z * cosb;
+		x1 = x * x_a - y * y_a;
+		y1 = x * y_a * y_b + y * x_a * y_b + z * x_b;
 		x1 = 320 + int(x1);
 		y1 = 240 - int(y1);
 	}
 
-	void plot1(float x, float y, float z, int xx, int yy, int &x1, int &y1)
+	void plot(float x, float y, float z, int xx, int yy, int &x1, int &y1)
 	{
 		float xx1, yy1;
-		xx1 = x * cosa - y * sina;
-		yy1 = x * sina * sinb + y * cosa * sinb + z * cosb;
+		xx1 = x * x_a - y * y_a;
+		yy1 = x * y_a * y_b + y * x_a * y_b + z * x_b;
 		x1 = xx + int(xx1);
 		y1 = yy + int(yy1);
 	}
 
-	void plot3d1(float x, float y, float z, int xx, int yy, sf::Color cl)
+	void render_3d_center(float s, float t, float u, sf::Color cl)
 	{
-		float xx1, yy1;
 		int x1, y1;
-		xx1 = x * cosa - y * sina;
-		yy1 = x * sina * sinb + y * cosa * sinb + z * cosb;
-		x1 = xx + int(xx1);
-		y1 = yy + int(yy1);
+		plot(s, t, u, 320, 240, x1, y1);
+
 		putpixel(x1, y1, cl);
 	}
 
-	void plot3d(float s, float t, float u, sf::Color cl)
+	void render_3d(float x, float y, float z, int xx, int yy, sf::Color cl)
 	{
 		int x1, y1;
-		plot(s, t, u, x1, y1);
+		plot(x, y, z, xx, yy, x1, y1);
+
 		putpixel(x1, y1, cl);
 	}
 };
@@ -100,20 +102,20 @@ void main()
 {
 	srand(time(0));
 
-	vector<Spr> a(10);
-	vector<Spr> b(10);
+	vector<Spr> planets(10);
+	vector<Spr> orbits(10);
 
 	vector<int> c(10);
 
 	float df, s, t, u, d;
-	vector<float> p(10), p1(10), planet(10), r1(10);
+	vector<float> planet_day(10), planet_year(10), planet(10), radii(10);
 
 	vector<int> x(20), y(20);
 
 	for (int i = 0; i < 10; i++)
 	{
-		p[i] = 0.0;
-		p1[i] = 0.0;
+		planet_day[i] = 0.0;
+		planet_year[i] = 0.0;
 	}
 	s = 90.0;
 	d = 1.0;
@@ -125,12 +127,12 @@ void main()
 	planet[5] = 40.0;
 	planet[6] = 40.0;
 
-	r1[1] = 100.0;
-	r1[2] = 155.0;
-	r1[3] = 210.0;
-	r1[4] = 270.0;
-	r1[5] = 250.0;
-	r1[6] = 250.0;
+	radii[1] = 100.0;
+	radii[2] = 155.0;
+	radii[3] = 210.0;
+	radii[4] = 270.0;
+	radii[5] = 250.0;
+	radii[6] = 250.0;
 
 
 	vector<sf::Color> colors =
@@ -151,76 +153,88 @@ void main()
 		sf::Color::Yellow
 	};
 
+	double ang_base = 40;
+
 	bool ever = true;
-	for (;ever;)
+	for (; ever;)
 	{
+		ang_base += 0.1;
+
 		for (int i = 0; i < 7; i++)
-			a[i].ini(p[i], 45 + 90);
+			planets[i].ini(to_rad(planet_day[i]), to_rad(45 + ang_base));
 
 		for (int i = 1; i < 7; i++)
-			b[i].ini(p1[i], 40 + 90);
+			orbits[i].ini(to_rad(planet_year[i]), to_rad(40 + ang_base));
 
 		for (int i = 1; i < 7; i++)
-			b[i].plot(r1[i], 0, 0, x[i], y[i]);
+			orbits[i].plot_center(radii[i], 0, 0, x[i], y[i]);
 
-		float i_max = 360.0 / 5.0;
-		for (float i = 0.0; i < 360.0; i += 5.0)
+		for (int i2 = 1; i2 < 5; i2++)
 		{
-			for (int i2 = 1; i2 < 5; i2++)
-				b[i2].plot3d(r1[i2] * cos(i * M_PI / 180.0), r1[i2] * sin(i * M_PI / 180.0), 0, colors[i2]);
+			float i_max = 360.0 / 5.0;
+			for (int i = 0; i < i_max; i++)
+			{
+				float ang = i / i_max * M_2PI;
+				float x = radii[i2] * cos(ang);
+				float y = radii[i2] * sin(ang);
+
+				orbits[i2].render_3d_center(x, y, 0, colors[i2]);
+			}
 		}
 
 		{
 			float i_max = 360.0 / 15.0;
 			float i2_max = 360.0 / 13.0;
-			for (int i = 0.0; i < i_max; i++)
+
+			for (int i3 = 1; i3 < 5; i3++)
 			{
-				float ang = 360.0 * i / i_max;
 
-				for (int i2 = 0; i2 < i2_max; i2++)
+				for (int i = 0.0; i < i_max; i++)
 				{
-					float ang2 = 360.0 * i2 / i2_max;
+					float ang = 360.0 * i / i_max;
 
-					count_ref(s, t, u, ang, ang2, planet[0]);
-					a[0].plot3d(s, t, u, sf::Color::Cyan);
-
-					for (int i3 = 1; i3 < 5; i3++)
+					for (int i2 = 0; i2 < i2_max; i2++)
 					{
+						float ang2 = 360.0 * i2 / i2_max;
+
+						count_ref(s, t, u, ang, ang2, planet[0]);
+						planets[0].render_3d_center(s, t, u, sf::Color::Cyan);
+
+
 						count_ref(s, t, u, ang, ang2, planet[i3]);
-						a[i3].plot3d1(s, t, u, x[i3], y[i3], pl_colors[i3]);
+						planets[i3].render_3d(s, t, u, x[i3], y[i3], pl_colors[i3]);
 					}
 				}
+
 			}
+
 		}
 
 		//delay(1);
 		//cleardevice();
 
-		vector<float> p_inc = 
+		vector<float> day_inc =
 		{
 			2.0f,
 			0.8f,
 			0.7f,
 			0.8f,
 			0.6f,
-			0.5f,
-			0.2f
 		};
-		vector<float> p1_inc =
+		vector<float> year_inc =
 		{
-			0.2f,
+			0.0f,
 			-0.1f,
 			0.3f,
 			-0.4f,
 			0.5f,
-			0.5f
 		};
 
-		for (int i = 0; i < 7; i++)
-			p[i] += p_inc[i];
+		for (int i = 0; i < 5; i++)
+			planet_day[i] += day_inc[i];
 
-		for (int i = 0; i < 7; i++)
-			p1[i] += p1_inc[i];
+		for (int i = 1; i < 5; i++)
+			planet_year[i] += year_inc[i];
 
 		window.display();
 		_sleep(10);
