@@ -1,30 +1,22 @@
 #pragma once
 
 
-struct vec_3;
+struct vec_2;
 
-double atan2(vec_3 in);
-double vmag(double x, double y, double z);
-double vmag(vec_3 in);
+double atan2(vec_2 in);
+double vmag(double x, double y);
+double vmag(vec_2 in);
 double sqr(double in);
 
-struct ang_2
-{
-	double xz = 0;
-	double xy = 0;
-};
-
-struct vec_3
+struct vec_2
 {
 	double x = 0;
 	double y = 0;
-	double z = 0;
 
-	vec_3(double in_x = 0, double in_y = 0, double in_z = 0)
+	vec_2(double in_x = 0, double in_y = 0, double in_z = 0)
 	{
 		x = in_x;
 		y = in_y;
-		z = in_z;
 	}
 
 	double mag()
@@ -49,26 +41,26 @@ struct vec_3
 		return lhs;
 	}*/
 
-	vec_3& operator +=(const vec_3& rhs)
+	vec_2& operator +=(const vec_2& rhs)
 	{
 		(*this).x = (*this).x + rhs.x;
 		(*this).y = (*this).y + rhs.y;
 		return *this;
 	}
 
-	vec_3& operator-=(const vec_3& rhs)
+	vec_2& operator-=(const vec_2& rhs)
 	{
 		(*this).x = (*this).x - rhs.x;
 		(*this).y = (*this).y - rhs.y;
 		return *this;
 	}
-	vec_3& operator*=(const vec_3& rhs)
+	vec_2& operator*=(const vec_2& rhs)
 	{
 		(*this).x = (*this).x * rhs.x;
 		(*this).y = (*this).y * rhs.y;
 		return *this;
 	}
-	vec_3& operator*=(const double& rhs)
+	vec_2& operator*=(const double& rhs)
 	{
 		(*this).x = (*this).x * rhs;
 		(*this).y = (*this).y * rhs;
@@ -76,24 +68,24 @@ struct vec_3
 	}
 };
 
-inline vec_3 operator+(vec_3 lhs, const vec_3& rhs)
+inline vec_2 operator+(vec_2 lhs, const vec_2& rhs)
 {
 	lhs += rhs;
 	return lhs;
 }
 
-inline vec_3 operator-(vec_3 lhs, const vec_3& rhs)
+inline vec_2 operator-(vec_2 lhs, const vec_2& rhs)
 {
 	lhs -= rhs;
 	return lhs;
 }
 
-inline vec_3 operator*(vec_3 lhs, const vec_3& rhs)
+inline vec_2 operator*(vec_2 lhs, const vec_2& rhs)
 {
 	lhs *= rhs;
 	return lhs;
 }
-inline vec_3 operator*(vec_3 lhs, const double& rhs)
+inline vec_2 operator*(vec_2 lhs, const double& rhs)
 {
 	lhs *= rhs;
 	return lhs;
@@ -104,17 +96,17 @@ double sqr(double in)	//Because writing pow(num, 2) all the time got annoying.
 	return in*in;
 }
 
-double atan2(vec_3 pos)
+double atan2(vec_2 pos)
 {
 	return std::atan2(pos.y, pos.x);
 }
 
-double vmag(double x, double y, double z)
+double vmag(double x, double y)
 {
-	return sqrt(sqr(x) + sqr(y) + sqr(z));
+	return sqrt(sqr(x) + sqr(y));
 }
 
-double vmag(vec_3 in)
+double vmag(vec_2 in)
 {
-	return vmag(in.x, in.y, in.z);
+	return vmag(in.x, in.y);
 }

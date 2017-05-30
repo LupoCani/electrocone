@@ -154,6 +154,11 @@ void main()
 	shells[2] = el2;
 
 	cout << find_in(shells, el2) << endl;
+
+	vec_2 vec;
+
 	system("pause");
+
+
 
 }

@@ -102,13 +102,16 @@ void main()
 {
 	srand(time(0));
 
-	vector<Spr> planets(10);
-	vector<Spr> orbits(10);
+	int pl_count = 6;
+	int orb_count = pl_count;
+
+	vector<Spr> planets(pl_count);
+	vector<Spr> orbits(orb_count);
 
 	vector<int> c(10);
 
 	float df, s, t, u, d;
-	vector<float> planet_day(10), planet_year(10), planet(10), radii(10);
+	vector<float> planet_day(pl_count), planet_year(pl_count), planet(pl_count), radii(orb_count);
 
 	vector<int> x(20), y(20);
 
@@ -125,14 +128,12 @@ void main()
 	planet[3] = 22.0;
 	planet[4] = 24.0;
 	planet[5] = 40.0;
-	planet[6] = 40.0;
 
 	radii[1] = 100.0;
 	radii[2] = 155.0;
 	radii[3] = 210.0;
 	radii[4] = 270.0;
-	radii[5] = 250.0;
-	radii[6] = 250.0;
+	radii[5] = 300.0;
 
 
 	vector<sf::Color> colors =
@@ -141,16 +142,18 @@ void main()
 		sf::Color::Blue,
 		sf::Color::Red,
 		sf::Color(100, 255, 100),
-		sf::Color(255, 50, 255)
+		sf::Color(255, 50, 255),
+		sf::Color::White
 	};
 
 	vector<sf::Color> pl_colors =
 	{
-		sf::Color::Green,
+		sf::Color::Cyan,
 		sf::Color::Green,
 		sf::Color::Magenta,
 		sf::Color::White,
-		sf::Color::Yellow
+		sf::Color::Yellow,
+		sf::Color::Blue
 	};
 
 	double ang_base = 40;
@@ -160,16 +163,16 @@ void main()
 	{
 		ang_base += 0.1;
 
-		for (int i = 0; i < 7; i++)
+		for (int i = 0; i < pl_count; i++)
 			planets[i].ini(to_rad(planet_day[i]), to_rad(45 + ang_base));
 
-		for (int i = 1; i < 7; i++)
+		for (int i = 1; i < orb_count; i++)
 			orbits[i].ini(to_rad(planet_year[i]), to_rad(40 + ang_base));
 
-		for (int i = 1; i < 7; i++)
+		for (int i = 1; i < orb_count; i++)
 			orbits[i].plot_center(radii[i], 0, 0, x[i], y[i]);
 
-		for (int i2 = 1; i2 < 5; i2++)
+		for (int i2 = 1; i2 < orb_count; i2++)
 		{
 			float i_max = 360.0 / 5.0;
 			for (int i = 0; i < i_max; i++)
@@ -183,26 +186,24 @@ void main()
 		}
 
 		{
-			float i_max = 360.0 / 15.0;
-			float i2_max = 360.0 / 13.0;
+			float i2_max = 360.0 / 15.0;
+			float i3_max = 360.0 / 13.0;
 
-			for (int i3 = 1; i3 < 5; i3++)
+			for (int i = 0; i < pl_count; i++)
 			{
-
-				for (int i = 0.0; i < i_max; i++)
+				for (int i2 = 0.0; i2 < i2_max; i2++)
 				{
-					float ang = 360.0 * i / i_max;
+					float ang = 360.0 * i2 / i2_max;
 
-					for (int i2 = 0; i2 < i2_max; i2++)
+					for (int i3 = 0; i3 < i3_max; i3++)
 					{
-						float ang2 = 360.0 * i2 / i2_max;
+						float ang2 = 360.0 * i3 / i3_max;
 
-						count_ref(s, t, u, ang, ang2, planet[0]);
-						planets[0].render_3d_center(s, t, u, sf::Color::Cyan);
-
-
-						count_ref(s, t, u, ang, ang2, planet[i3]);
-						planets[i3].render_3d(s, t, u, x[i3], y[i3], pl_colors[i3]);
+						count_ref(s, t, u, ang, ang2, planet[i]);
+						if (i == 0)
+							planets[0].render_3d_center(s, t, u, pl_colors[i]);
+						else
+							planets[i].render_3d(s, t, u, x[i], y[i], pl_colors[i]);
 					}
 				}
 
@@ -220,6 +221,7 @@ void main()
 			0.7f,
 			0.8f,
 			0.6f,
+			0.4f
 		};
 		vector<float> year_inc =
 		{
@@ -228,12 +230,13 @@ void main()
 			0.3f,
 			-0.4f,
 			0.5f,
+			0.3f
 		};
 
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < pl_count; i++)
 			planet_day[i] += day_inc[i];
 
-		for (int i = 1; i < 5; i++)
+		for (int i = 1; i < pl_count; i++)
 			planet_year[i] += year_inc[i];
 
 		window.display();
