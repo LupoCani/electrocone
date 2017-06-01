@@ -26,6 +26,179 @@ const double M_RF = M_PI / 180.0;
 
 sf::RenderWindow window(sf::VideoMode(1000, 1000), "Lorem Ipsum");
 
+
+struct elct
+{
+	short n = 1;
+	short l = 0;
+	short ml = 0;
+	short ms = 0;
+
+	void increment()
+	{
+		if (n < 1)
+		{
+			(*this) = elct();
+			return;
+		}
+
+		ml++;
+
+		if (ml >= 2 * l + 1)
+		{
+			ml = 0;
+			l++;
+		}
+		if (l >= n)
+		{
+			l = 0;
+			ms++;
+		}
+		if (ms >= 2)
+		{
+			n++;
+			ms = 0;
+		}
+	}
+	void decrement()
+	{
+		if (n < 1)
+			return;
+
+		ml--;
+
+		if (ml < 0)
+		{
+			l--;
+			ml = 2 * l;
+		}
+		if (l < 0)
+		{
+			l = n - 1;
+			ms--;
+		}
+		if (ms < 0)
+		{
+			ms = 1;
+			n--;
+		}
+	}
+
+	elct operator++(int)
+	{
+		(*this).increment();
+		return *this;
+	}
+	elct operator--(int)
+	{
+		(*this).decrement();
+		return *this;
+	}
+
+};
+
+
+inline bool operator==(elct &lhs, elct &rhs)
+{
+	if (lhs.n != rhs.n)
+		return false;
+
+	if (lhs.l != rhs.l)
+		return false;
+
+	if (lhs.ml != rhs.ml)
+		return false;
+
+	if (lhs.ms != rhs.ms)
+		return false;
+
+	return true;
+}
+inline bool operator!=(elct &lhs, elct &rhs)
+{
+	return !(lhs == rhs);
+}
+
+template<class vec_cont>
+void push_any(vector<vec_cont> &in, int ind, vec_cont element)
+{
+	vector<vec_cont>::iterator ref = in.begin();
+	if (ind < 0)
+		ref = in.end();
+
+	in.insert(ref + ind, element);
+}
+
+template<class vec_cont>
+void pop_any(vector<vec_cont> &in, int ind)
+{
+	vector<vec_cont>::iterator ref = in.begin();
+	if (ind < 0)
+		ref = in.end();
+
+	in.erase(ref + ind);
+}
+
+template<class vec_cont>
+int find_in(vector<vec_cont> &in, vec_cont element)
+{
+	for (int i = 0; i < in.size(); i++)
+		if (in[i] == element)
+			return i;
+
+	return -1;
+}
+
+elct get_electron(int number)
+{
+	elct electron;
+
+	for (int i = 0; i < number; i++)
+		electron++;
+}
+
+int get_number(elct electron)
+{
+	elct comp;
+	int i = 0;
+	while (electron != comp)
+	{
+		i++;
+		comp++;
+	}
+	return i;
+}
+
+vector<int> get_bounds(elct el)
+{
+	int num = get_number(el);
+
+	elct el_up = el;
+	int bound_up = 0;
+
+	while (el_up.n == el.n)
+	{
+		el_up++;
+		bound_up++;
+	}
+
+	elct el_down = el;
+	int bound_down = 0;
+
+	while (el_down.n == el.n)
+	{
+		el_down--;
+		bound_down++;
+	}
+	bound_down--;
+
+	int shell_size = bound_up + bound_down;
+	int shell_pos = bound_down;
+
+	return { shell_pos, shell_size };
+
+}
+
 void putpixel(double x, double y, sf::Color cl)
 {
 	sf::Vertex point;
@@ -98,79 +271,103 @@ void count_ref(float &s, float &t, float &u, float ang_1, float ang_2, float r)
 	u = r * cos(ang_1);
 }
 
-void main()
+void print_elec(elct in)
+{
+	int n = in.n;
+	int l = in.l;
+	int ml = in.ml;
+	float ms = in.ms;
+
+	if (ml % 2)
+		ml = -ml / 2.0 + 0.5;
+	else
+		ml = ml / 2;
+
+	ms -= 0.5;
+
+	cout << "-----------------\n";
+
+	cout << "n = " << n << endl;
+	cout << "l = " << l << endl;
+	cout << "n = " << ml << endl;
+	cout << "n = " << ms << endl;
+
+	cout << "-----------------\n";
+}
+
+void main_old()
 {
 	srand(time(0));
 
-	int pl_count = 6;
-	int orb_count = pl_count;
-
-	vector<Spr> planets(pl_count);
-	vector<Spr> orbits(orb_count);
-
-	vector<int> c(10);
-
-	float df, s, t, u, d;
-	vector<float> planet_day(pl_count), planet_year(pl_count), planet(pl_count), radii(orb_count);
-
-	vector<int> x(20), y(20);
-
-	for (int i = 0; i < 10; i++)
-	{
-		planet_day[i] = 0.0;
-		planet_year[i] = 0.0;
-	}
-	s = 90.0;
-	d = 1.0;
-	planet[0] = 55.0;
-	planet[1] = 18.0;
-	planet[2] = 23.0;
-	planet[3] = 22.0;
-	planet[4] = 24.0;
-	planet[5] = 40.0;
-
-	radii[1] = 100.0;
-	radii[2] = 155.0;
-	radii[3] = 210.0;
-	radii[4] = 270.0;
-	radii[5] = 300.0;
-
-
-	vector<sf::Color> colors =
-	{
-		sf::Color::Green,
-		sf::Color::Blue,
-		sf::Color::Red,
-		sf::Color(100, 255, 100),
-		sf::Color(255, 50, 255),
-		sf::Color::White
-	};
-
-	vector<sf::Color> pl_colors =
-	{
-		sf::Color::Cyan,
-		sf::Color::Green,
-		sf::Color::Magenta,
-		sf::Color::White,
-		sf::Color::Yellow,
-		sf::Color::Blue
-	};
-
 	double ang_base = 40;
+	int select = 1;
 
 	bool ever = true;
+
+	int pl_count = 30;
 	for (; ever;)
 	{
-		ang_base += 0.1;
+
+		int orb_count = pl_count;
+
+		vector<Spr> planets(pl_count);
+		vector<Spr> orbits(orb_count);
+
+		vector<int> c(10);
+
+		float df, s, t, u, d;
+		vector<float> planet_day(pl_count), planet_year(pl_count), planet(pl_count), radii(orb_count);
+
+		vector<int> x_vec(pl_count), y_vec(pl_count);
+
+		vector<sf::Color> colors(pl_count);
+		vector<sf::Color> pl_colors(pl_count);
+
+		s = 90.0;
+		d = 1.0;
+		planet[0] = 20.0;
+		pl_colors[0] = sf::Color::White;
+
+
+		ang_base += 0.002;
+
+
+		vector<elct> elects;
+		{
+			elct elec_base;
+
+			for (int i = 0; i < pl_count; i++)
+			{
+				vector<int> data = get_bounds(elec_base);
+
+				planet_year[i] = 360.0 * (ang_base + data[0] / float(data[1]));
+				planet_day[i] = planet_year[i] * 10;
+				radii[i] = 75 * elec_base.n;
+				planet[i] = 20;
+
+				if (elec_base.ms)
+					pl_colors[i] = sf::Color::Red;
+				else
+					pl_colors[i] = sf::Color::Blue;
+
+				if (i == select)
+					pl_colors[i] = sf::Color::Green;
+
+				colors[i] = sf::Color::White;
+				elects.push_back(elec_base);
+				elec_base++;
+			}
+		}
+
 
 		for (int i = 0; i < pl_count; i++)
-			planets[i].ini(to_rad(planet_day[i]), to_rad(45 + ang_base));
+			planets[i].ini(to_rad(planet_day[i]), to_rad(40));
 
-		for (int i = 1; i < orb_count; i++)
-			orbits[i].ini(to_rad(planet_year[i]), to_rad(40 + ang_base));
+		for (int i = 0; i < orb_count; i++)
+			orbits[i].ini(to_rad(planet_year[i]), to_rad(40));
 
-		for (int i = 1; i < orb_count; i++)
-			orbits[i].plot_center(radii[i], 0, 0, x[i], y[i]);
+		for (int i = 0; i < orb_count; i++)
+			orbits[i].plot_center(radii[i], 0, 0, x_vec[i], y_vec[i]);
 
 		for (int i2 = 1; i2 < orb_count; i2++)
 		{
@@ -200,44 +397,17 @@ void main()
 						float ang2 = 360.0 * i3 / i3_max;
 
 						count_ref(s, t, u, ang, ang2, planet[i]);
-						if (i == 0)
+						if (i == 0 && 0)
 							planets[0].render_3d_center(s, t, u, pl_colors[i]);
 						else
-							planets[i].render_3d(s, t, u, x[i], y[i], pl_colors[i]);
+							planets[i].render_3d(s, t, u, x_vec[i], y_vec[i], pl_colors[i]);
 					}
 				}
-
 			}
-
 		}
 
 		//delay(1);
 		//cleardevice();
-
-		vector<float> day_inc =
-		{
-			2.0f,
-			0.8f,
-			0.7f,
-			0.8f,
-			0.6f,
-			0.4f
-		};
-		vector<float> year_inc =
-		{
-			0.0f,
-			-0.1f,
-			0.3f,
-			-0.4f,
-			0.5f,
-			0.3f
-		};
-
-		for (int i = 0; i < pl_count; i++)
-			planet_day[i] += day_inc[i];
-
-		for (int i = 1; i < pl_count; i++)
-			planet_year[i] += year_inc[i];
 
 		window.display();
 		_sleep(10);
@@ -248,5 +418,50 @@ void main()
 			//closegraph();
 			exit(1);
 		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+		{
+			while (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+				void;
+			pl_count++;
+		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+		{
+			while (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+				void;
+			pl_count--;
+		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+		{
+			while (sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+				void;
+
+			select--;
+			print_elec(elects[select]);
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+		{
+			while (sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+				void;
+
+			select++;
+			print_elec(elects[select]);
+		}
+
+		if (select < 0)
+			select = 0;
+
+		if (select >= pl_count)
+			select = pl_count - 1;
+
+		if (pl_count < 2)
+			pl_count = 2;
 	}
+}
+
+void main()
+{
+	main_old();
 }
